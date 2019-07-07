@@ -1,0 +1,25 @@
+{
+  "name": "omnibtc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "bitcoin-core": "^2.2.0",
+    "log4js": "^4.4.0",
+    "node-json-rpc": "0.0.1"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhangpanyi/ominibtc.git"
+  },
+  "author": "zpy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zhangpanyi/ominibtc/issues"
+  },
+  "homepage": "https://github.com/zhangpanyi/ominibtc#readme"
+}

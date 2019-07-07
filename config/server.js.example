@@ -1,0 +1,23 @@
+Server = {
+    accept: {
+        host: '0.0.0.0', 
+        port: 18545,
+        // auth: {
+        //     users: [
+        //         {
+        //             login: "username",
+        //             hash: "password"
+        //         }
+        //     ]
+        // }
+    },
+    endpoint: {
+        host: 'localhost',
+        port: 18332,
+        network: 'testnet',
+        password: 'password',
+        username: 'username',
+    }
+}
+
+module.exports = Server;
