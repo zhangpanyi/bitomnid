@@ -1,4 +1,4 @@
-Server = {
+module.exports = {
     accept: {
         host: '0.0.0.0', 
         port: 18545,
@@ -18,6 +18,4 @@ Server = {
         password: 'password',
         username: 'username',
     }
-}
-
-module.exports = Server;
+};
