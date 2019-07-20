@@ -1,8 +1,11 @@
 const BigNumber = require('bignumber.js');
+
 const utils = require('./utils/utils.js');
-const nothrow = require('../common/nothrow');
-const tokens = require("../../config/tokens");
 const feeutils = require('./utils/feeutils.js');
+
+const nothrow = require('../common/nothrow');
+
+const tokens = require("../../config/tokens");
 
 // 发送比特币
 async function asyncSendBTC(client, to, amount) {
@@ -18,8 +21,8 @@ async function asyncSendBTC(client, to, amount) {
     amount = new BigNumber(amount);
     for (let idx in listunspent) {
         const unspent = listunspent[idx];
-        inputs.push({txid: unspent.txid, vout: unspent.vout});
         sum = sum.plus(new BigNumber(unspent.amount));
+        inputs.push({txid: unspent.txid, vout: unspent.vout});
         if (sum.comparedTo(amount) >= 0) {
             break
         }
@@ -54,11 +57,13 @@ async function asyncSendBTC(client, to, amount) {
             break;
         }
 
+        let addamount;
         let count = 0;
-        [listunspent, inputs, count] = fillTransactionInputs(listunspent, inputs, 1);
+        [listunspent, inputs, addamount, count] = utils.fillTransactionInputs(listunspent, inputs, 1);
         if (count == 0) {
             throw new Error('Insufficient funds');
         }
+        sum = sum.plus(new BigNumber(addamount));
     }
 
     // 发送原始交易

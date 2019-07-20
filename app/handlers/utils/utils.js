@@ -1,3 +1,5 @@
+const BigNumber = require('bignumber.js');
+
 module.exports = {
     // 验证参数规则
     validationParams: function(req, rule, callback) {
@@ -37,6 +39,7 @@ module.exports = {
                 continue;
             }
             count++;
+            amount = amount.plus(new BigNumber(unspent.amount));
             inputs.push({txid: unspent.txid, vout: unspent.vout});
 
             if (count >= maxNum) {
@@ -45,7 +48,7 @@ module.exports = {
             listunspent[idx] = listunspent[listunspent.length - 1];
             listunspent.length = listunspent.length - 1;
         }
-        return [listunspent, inputs, count];
+        return [listunspent, inputs, amount.toString(), count];
     },
 
     // 获取热钱包地址

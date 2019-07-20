@@ -1,6 +1,9 @@
 
 const BigNumber = require('bignumber.js');
+
 const utils = require('./utils/utils.js');
+const feeutils = require('./utils/feeutils.js');
+
 const nothrow = require('../common/nothrow');
 const tokens = require("../../config/tokens");
 
@@ -30,15 +33,19 @@ async function asyncCollectionBTC(client) {
         const unspent = listunspent[idx];
         inputs.push({txid: unspent.txid, vout: unspent.vout});
     }
+    if (inputs.length == 0) {
+        return null;
+    }
 
+    // 获取手续费率
+    const feeRate = await feeutils.asyncGetFeeRate(client);
     const output = {};
-    output[hot] = listunspent[0].amount;
+    output[hot] = feeRate;
 
     // 创建原始交易
-    const feeBudget = new BigNumber(0.0005);
     let rawtx = await client.createRawTransaction(inputs, output);
     rawtx = await client.fundRawTransaction(rawtx,
-        {changeAddress: hot, feeRate: feeBudget.toString(10)});
+        {changeAddress: hot, feeRate: feeRate});
     const txsigned = await client.signRawTransaction(rawtx.hex);
     const txid = await client.sendRawTransaction(txsigned.hex);
     return txid;
@@ -59,14 +66,23 @@ async function asyncCollectionUSDT(client, minAmount) {
         return [];
     }
 
-    // 生成交易信息
-    
-
-    return array;
+    // 发送到主地址
+    let txs = [];
+    listunspent = listunspent.concat(await utils.asyncGetUnspentByAddresses(client, [hot]));
+    for (let idx = 0; idx < transactions.length; idx++) {
+        let txid, ok;
+        const tx = transactions[idx];
+        [txid, listunspent, ok] = await asyncSendUSDT(client, listunspent, tx.inputs, hot, tx.amount);
+        if (!ok) {
+            break;
+        }
+        txs.push(txid);
+    }
+    return txs;
 }
 
 // 匹配交易事务
-async function matchTransactions(listunspent, omniBalances, minAmount) {
+function matchTransactions(listunspent, omniBalances, minAmount) {
     let transactions = new Array();
     for (let idx in listunspent) {
         const unspent = listunspent[idx];
@@ -84,6 +100,10 @@ async function matchTransactions(listunspent, omniBalances, minAmount) {
         }
     }
     return transactions;
+}
+
+// 发送USDT到地址
+async function asyncSendUSDT(client, listunspent, inputs, to, amount) {
 }
 
 module.exports = async function(client, req, callback) {
