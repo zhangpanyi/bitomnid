@@ -68,8 +68,8 @@ module.exports = {
         return balances;
     },
 
-    // 过滤拥有Omni余额的未消费输出
-    filterUnspentWithOmniBalacne: async function (client, listunspent, propertyid) {
+    // 获取没有Omni余额未消费输出
+    getUnspentWithNoOmniBalance: async function (client, listunspent, propertyid) {
         let array = new Array();
         const balances = await this.getOmniWalletBalances(client, propertyid);
         for (let idx in listunspent) {
@@ -79,5 +79,5 @@ module.exports = {
             }
         }
         return array;
-    }
+    },
 };
