@@ -1,5 +1,6 @@
 const nothrow = require('../common/nothrow');
 
+// 创建新地址
 module.exports = async function(client, req, callback) {
     let address, error;
     [error, address] = await nothrow(client.getNewAddress('payment'));

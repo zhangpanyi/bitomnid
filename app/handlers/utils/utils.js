@@ -21,8 +21,35 @@ module.exports = {
         return true;
     },
 
+    // 填充交易输入
+    fillTransactionInputs: function(listunspent, inputs, maxNum) {
+        let set = new Set();
+        for (let idx = 0; idx < inputs.length; idx++) {
+            const input = inputs[idx];
+            set.add(input.txid + ':' + input.vout)
+        }
+
+        let count = 0;
+        for (let idx = 0; idx < length(listunspent);) {
+            const unspent = listunspent[idx];
+            if (set.has(unspent.txid + ':' + unspent.vout)) {
+                idx++;
+                continue;
+            }
+            count++;
+            inputs.push({txid: unspent.txid, vout: unspent.vout});
+
+            if (count >= maxNum) {
+                break;
+            }
+            listunspent[idx] = listunspent[listunspent.length - 1];
+            listunspent.length = listunspent.length - 1;
+        }
+        return [listunspent, inputs, count];
+    },
+
     // 获取热钱包地址
-    getHotAddress: async function(client) {
+    asyncGetHotAddress: async function(client) {
         const addresses = await client.getAddressesByAccount('hot');
         if (addresses.length == 0) {
             const address = await client.getAccountAddress('hot');
@@ -32,27 +59,12 @@ module.exports = {
     },
 
     // 获取付款钱包地址
-    getPaymentAddresses: async function(client) {
+    asyncGetPaymentAddresses: async function(client) {
         return await client.getAddressesByAccount('payment');
     },
 
-    // 获取未消费输出
-    getUnspentByAddresses: async function (client, addresses, minBalance) {
-        let array = new Array();
-        const listunspent = await client.listUnspent(1, 999999999, addresses);
-        for (const index in listunspent) {
-            const unspent = listunspent[index];
-            if (!minBalance) {
-                array.push(unspent);
-            } else if (unspent.amount >= minBalance) {
-                array.push(unspent);
-            }
-        }
-        return array;
-    },
-
     // 获取Omni代币余额
-    getOmniWalletBalances: async function (client, propertyid) {
+    asyncGetOmniWalletBalances: async function (client, propertyid) {
         let balances = new Map();
         const array = await client.omni_getWalletAddressBalances();
         for (let idx in array) {
@@ -68,10 +80,25 @@ module.exports = {
         return balances;
     },
 
-    // 获取没有Omni余额未消费输出
-    getUnspentWithNoOmniBalance: async function (client, listunspent, propertyid) {
+    // 获取未消费输出
+    asyncGetUnspentByAddresses: async function (client, addresses, minBalance) {
         let array = new Array();
-        const balances = await this.getOmniWalletBalances(client, propertyid);
+        const listunspent = await client.listUnspent(1, 999999999, addresses);
+        for (const index in listunspent) {
+            const unspent = listunspent[index];
+            if (!minBalance) {
+                array.push(unspent);
+            } else if (unspent.amount >= minBalance) {
+                array.push(unspent);
+            }
+        }
+        return array;
+    },
+
+    // 获取没有Omni余额未消费输出
+    asyncGetUnspentWithNoOmniBalance: async function (client, listunspent, propertyid) {
+        let array = new Array();
+        const balances = await this.asyncGetOmniWalletBalances(client, propertyid);
         for (let idx in listunspent) {
             const unspent = listunspent[idx];
             if (!balances.has(unspent.address)) {

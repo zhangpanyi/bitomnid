@@ -7,14 +7,28 @@ class RPCServer {
     constructor(client){
         this._server = new rpc.Server(server.accept);
 
-        const sentoken = require('./handlers/sentoken');
-        this._server.addMethod('extSendToken', function(req, callback) {
-            sentoken(client, req, callback);
+        // 资金归集
+        const collect = require('./handlers/collect');
+        this._server.addMethod('extCollect', function(req, callback) {
+            collect(client, req, callback);
         });
 
-        const newaddress = require('./handlers/newaddress');
-        this._server.addMethod('extNewAddress', function(req, callback) {
-            newaddress(client, req, callback);
+        // 创建地址
+        const newaddr = require('./handlers/newaddr');
+        this._server.addMethod('extNewAddr', function(req, callback) {
+            newaddr(client, req, callback);
+        });
+
+        // 发送手续费
+        const sendfee = require('./handlers/sendfee');
+        this._server.addMethod('extSendFee', function(req, callback) {
+            sendfee(client, req, callback);
+        });
+
+        // 发送BTC/USDT
+        const sendtoken = require('./handlers/sendtoken');
+        this._server.addMethod('extSendToken', function(req, callback) {
+            sendtoken(client, req, callback);
         });
     }
 
