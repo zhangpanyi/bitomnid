@@ -149,7 +149,18 @@ module.exports = async function(client, req, callback) {
                 this.value = symbol;
                 return true;
             }
-        }
+        },
+        {
+            name: 'minAmount',
+            value: '50',
+            is_valid: function(amount) {
+                if (!validator.isFloat(amount)) {
+                    return false;
+                }
+                this.value = amount;
+                return true;
+            }
+        },
     ];
     if (!utils.validationParams(req, rule, callback)) {
         return;
@@ -159,7 +170,7 @@ module.exports = async function(client, req, callback) {
     if (rule[0] == 'BTC') {
         [error, txid] = await nothrow(asyncCollectionBTC(client));
     } else if (rule['symbol'] == 'USDT') {
-        [error, txid] = await nothrow(asyncCollectionUSDT(client));
+        [error, txid] = await nothrow(asyncCollectionUSDT(client, rule[1]));
     }
 
     if (error == null) {
