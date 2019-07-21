@@ -69,7 +69,7 @@ module.exports = {
     // 获取Omni代币余额
     asyncGetOmniWalletBalances: async function (client, propertyid) {
         let balances = new Map();
-        const array = await client.omni_getWalletAddressBalances();
+        const array = await client.omni_getwalletaddressbalances();
         for (let idx in array) {
             const address = array[idx];
             for (let idx in address.balances) {

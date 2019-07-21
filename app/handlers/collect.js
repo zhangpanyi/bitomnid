@@ -61,10 +61,14 @@ async function asyncCollectionUSDT(client, minAmount) {
     const balances = await utils.asyncGetOmniWalletBalances(client, propertyid);
 
     // 匹配交易事务
-    let transactions = matchTransactions(listunspent, balances, minAmount);
+    let transactions;
+    [transactions, listunspent] = matchTransactions(listunspent, balances, minAmount);
     if (transactions.length == 0) {
         return [];
     }
+
+    // 获取手续费率
+    const feeRate = await feeutils.asyncGetFeeRate(client);
 
     // 发送到主地址
     let txs = [];
@@ -72,7 +76,7 @@ async function asyncCollectionUSDT(client, minAmount) {
     for (let idx = 0; idx < transactions.length; idx++) {
         let txid, ok;
         const tx = transactions[idx];
-        [txid, listunspent, ok] = await asyncSendUSDT(client, listunspent, tx.inputs, hot, tx.amount);
+        [txid, listunspent, ok] = await asyncSendUSDT(client, listunspent, tx.inputs, hot, tx.amount, feeRate);
         if (!ok) {
             break;
         }
@@ -84,26 +88,52 @@ async function asyncCollectionUSDT(client, minAmount) {
 // 匹配交易事务
 function matchTransactions(listunspent, omniBalances, minAmount) {
     let transactions = new Array();
-    for (let idx in listunspent) {
+    for (let idx  = 0; idx < listunspent.length;) {
         const unspent = listunspent[idx];
-        if (omniBalances.has(unspent.address)) {
-            let balance = new BigNumber(omniBalances.get(unspent.address));
-            if (balance.comparedTo(minAmount) == -1) {
-                omniBalances.delete(unspent.address);
-                continue;
-            }
-            
-            omniBalances.delete(unspent.address);
-            let amount = new BigNumber(unspent.amount);
-            let input = new Input(unspent.txid, unspent.vout, amount);
-            transactions.push({inputs: [input], amount: balance});
+        if (!omniBalances.has(unspent.address)) {
+            idx++;
+            continue;
         }
+
+        let balance = new BigNumber(omniBalances.get(unspent.address));
+        if (balance.comparedTo(minAmount) == -1) {
+            idx++;
+            omniBalances.delete(unspent.address);
+            continue;
+        }
+        
+        omniBalances.delete(unspent.address);
+        let amount = new BigNumber(unspent.amount);
+        let input = new Input(unspent.txid, unspent.vout, amount);
+        transactions.push({inputs: [input], amount: balance});
+
+        listunspent[idx] = listunspent[listunspent.length - 1];
+        listunspent.length = listunspent.length - 1;
     }
-    return transactions;
+    return [transactions, listunspent];
 }
 
 // 发送USDT到地址
-async function asyncSendUSDT(client, listunspent, inputs, to, amount) {
+async function asyncSendUSDT(client, listunspent, inputs, to, amount, feeRate) {
+    if (listunspent.length == 0) {
+        return [null, listunspent, false];
+    }
+
+    let addamount;
+    let count = 0;
+    [listunspent, inputs, addamount, count] = utils.fillTransactionInputs(listunspent, inputs, 1);
+    if (count == 0) {
+        return [null, listunspent, false];
+    }
+
+    let rawtx = await client.createRawTransaction(inputs, {});
+    let payload = await client.omni_createpayload_simplesend(tokens.propertyid, amount.toString());
+    rawtx = await client.omni_createrawtx_opreturn(rawtx, payload);
+    rawtx = await client.omni_createrawtx_reference(rawtx, to);
+    rawtx = await client.fundRawTransaction(rawtx, {changeAddress: to, feeRate: feeRate});
+    const txsigned = await client.signRawTransaction(rawtx.hex);
+    const txid = await client.sendRawTransaction(txsigned.hex);
+    return txid;
 }
 
 module.exports = async function(client, req, callback) {
