@@ -1,11 +1,13 @@
 const BigNumber = require('bignumber.js');
 
 const utils = require('./utils/utils.js');
-const feeutils = require('./utils/feeutils.js');
+const feeutils = require('./utils/fee.js');
 
+const logger = require('../common/logger');
 const nothrow = require('../common/nothrow');
 
 const tokens = require("../../config/tokens");
+
 
 // 发送比特币
 async function asyncSendBTC(client, to, amount) {
@@ -13,7 +15,7 @@ async function asyncSendBTC(client, to, amount) {
     const hot = await utils.asyncGetHotAddress(client);
     const addresses = await utils.asyncGetPaymentAddresses(client);
     let listunspent = await utils.asyncGetUnspentByAddresses(client, addresses);
-    listunspent = await utils.filterUnspentWithOmniBalacne(client, listunspent, tokens.propertyid);
+    listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, tokens.propertyid);
 
     // 创建输入和输出
     let inputs = [];
@@ -46,29 +48,26 @@ async function asyncSendBTC(client, to, amount) {
     const feeRate = await feeutils.asyncGetFeeRate(client);
 
     // 创建原始交易
-    let hex;
     while (true) {
         let rawtx = await client.createRawTransaction(inputs, output);
+        let txsigned = await client.signRawTransaction(rawtx);
+        const bytes = parseInt((txsigned.hex.length + 100) / 2);
+        const fee = feeutils.calculateFee(bytes, feeRate);
+        if (sum.minus(amount).comparedTo(fee) < 0) {
+            let count = 0;
+            let addamount;
+            [listunspent, inputs, addamount, count] = utils.fillTransactionInputs(listunspent, inputs, 1);
+            if (count == 0) {
+                throw new Error('Insufficient funds');
+            }
+            sum = sum.plus(new BigNumber(addamount));
+            continue;
+        }
+
         rawtx = await client.fundRawTransaction(rawtx, {changeAddress: hot, feeRate: feeRate});
-        const txsigned = await client.signRawTransaction(rawtx.hex);
-        const fee = feeutils.calculateFee(txsigned.hex.length, feeRate);
-        if (sum.minus(amount).comparedTo(fee) >= 0) {
-            hex = txsigned.hex;
-            break;
-        }
-
-        let addamount;
-        let count = 0;
-        [listunspent, inputs, addamount, count] = utils.fillTransactionInputs(listunspent, inputs, 1);
-        if (count == 0) {
-            throw new Error('Insufficient funds');
-        }
-        sum = sum.plus(new BigNumber(addamount));
+        txsigned = await client.signRawTransaction(rawtx.hex);
+        return await client.sendRawTransaction(txsigned.hex);
     }
-
-    // 发送原始交易
-    const txid = await client.sendRawTransaction(hex);
-    return txid;
 }
 
 // 发送泰达币
@@ -119,13 +118,17 @@ module.exports = async function(client, req, callback) {
     let error, txid;
     if (rule[1] == 'BTC') {
         [error, txid] = await nothrow(asyncSendBTC(client, rule[0], rule[2]));
-    } else if (rule['symbol'] == 'USDT') {
+    } else if (rule[1] == 'USDT') {
         [error, txid] = await nothrow(asyncSendUSDT(client, rule[0], rule[2]));
     }
 
     if (error == null) {
         callback(undefined, txid);
+        logger.error('send token success, symbol: %s, to: %s, amount: %s, txid: %s',
+            rule[1], rule[0], rule[2], txid);
     } else {
         callback({code: -32000, message: error.message}, undefined);
+        logger.error('failed to send token, symbol: %s, to: %s, amount: %s, reason: %s',
+            rule[1], rule[0], rule[2], error.message);
     }
 }

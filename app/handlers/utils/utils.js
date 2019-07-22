@@ -32,7 +32,8 @@ module.exports = {
         }
 
         let count = 0;
-        for (let idx = 0; idx < length(listunspent);) {
+        let amount = new BigNumber(0);
+        for (let idx = 0; idx < listunspent.length;) {
             const unspent = listunspent[idx];
             if (set.has(unspent.txid + ':' + unspent.vout)) {
                 idx++;

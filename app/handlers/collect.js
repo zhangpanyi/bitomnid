@@ -58,10 +58,11 @@ async function asyncCollectionUSDT(client, minAmount) {
     const hot = await utils.asyncGetHotAddress(client);
     const addresses = await utils.asyncGetPaymentAddresses(client);
     let listunspent = await utils.asyncGetUnspentByAddresses(client, addresses);
-    const balances = await utils.asyncGetOmniWalletBalances(client, propertyid);
+    const balances = await utils.asyncGetOmniWalletBalances(client, tokens.propertyid);
 
     // 匹配交易事务
     let transactions;
+    balances.delete(hot);
     [transactions, listunspent] = matchTransactions(listunspent, balances, minAmount);
     if (transactions.length == 0) {
         return [];
