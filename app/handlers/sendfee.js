@@ -3,6 +3,9 @@ const BigNumber = require('bignumber.js');
 const utils = require('./utils/utils.js');
 const feeutils = require('./utils/fee.js');
 
+const logger = require('../common/logger');
+const nothrow = require('../common/nothrow');
+
 const tokens = require("../../config/tokens");
 
 // 发送手续费
@@ -11,7 +14,7 @@ async function asyncSendFee(client, minAmount) {
     minAmount = new BigNumber(minAmount);
     const hot = await utils.asyncGetHotAddress(client);
     const balances = await utils.asyncGetOmniWalletBalances(client, tokens.propertyid);
-    for (let key of balances) {
+    for (let [key, _] of balances) {
         let amount = new BigNumber(balances.get(key));
         if (amount.comparedTo(minAmount) == -1) {
             balances.delete(key);
@@ -37,7 +40,7 @@ async function asyncSendFee(client, minAmount) {
     // 生成交易输出
     let output = {};
     let sum = new BigNumber(0);
-    for (let key of balances) {
+    for (let [key, _] of balances) {
         output[key] = feeRate;
         sum = sum.plus(new BigNumber(feeRate));
     }
@@ -50,7 +53,10 @@ async function asyncSendFee(client, minAmount) {
             break;
         }
         [listunspent, inputs, addamount, count] = utils.fillTransactionInputs(listunspent, inputs, 1);
-        sendAmount = sendAmount.minus(addamount);
+        if (count == 0) {
+            break;
+        } 
+        sendAmount = sendAmount.plus(addamount);
         if (sendAmount.comparedTo(sum) >= 0) {
             break;
         }
@@ -67,7 +73,8 @@ async function asyncSendFee(client, minAmount) {
                 return null;
             }
             sum = sum.minus(feeRate);
-            delete Object.keys(output)[0];
+            let key = Object.keys(output)[0];
+            delete output[key];
             continue;
         }
 
@@ -95,5 +102,13 @@ module.exports = async function(client, req, callback) {
         return;
     }
  
-    callback(undefined, null);
+    let error, txid;
+    [error, txid] = await nothrow(asyncSendFee(client, rule[0]));
+    if (error == null) {
+        callback(undefined, txid);
+        logger.error('send fee success, txid: %s', txid);
+    } else {
+        callback({code: -32000, message: error.message}, undefined);
+        logger.error('failed to send fee, reason: %s', error.message);
+    }
  }

@@ -8,10 +8,8 @@ const logger = require('./app/common/logger');
 try {
     const client = new Client(server.endpoint);
 
-    let a = {a: 10};
-    delete a.a
-    console.info(Object.keys(a));
-
+    let collect = require('./app/handlers/collect');
+    collect(client, '1');
     // const rpcserver = new RPCServer(client);
     // rpcserver.start();
 } catch (error) {

@@ -2,7 +2,7 @@
 const BigNumber = require('bignumber.js');
 
 const utils = require('./utils/utils.js');
-const feeutils = require('./utils/feeutils.js');
+const feeutils = require('./utils/fee.js');
 
 const nothrow = require('../common/nothrow');
 const tokens = require("../../config/tokens");
@@ -52,7 +52,7 @@ async function asyncCollectionBTC(client) {
 }
 
 // 归集泰达币
-async function asyncCollectionUSDT(client, minAmount) {
+module.exports = async function asyncCollectionUSDT(client, minAmount) {
     // 获取基本信息
     minAmount = new BigNumber(minAmount);
     const hot = await utils.asyncGetHotAddress(client);
@@ -77,7 +77,7 @@ async function asyncCollectionUSDT(client, minAmount) {
     for (let idx = 0; idx < transactions.length; idx++) {
         let txid, ok;
         const tx = transactions[idx];
-        [txid, listunspent, ok] = await asyncSendUSDT(client, listunspent, tx.inputs, hot, tx.amount, feeRate);
+        [txid, listunspent, ok] = await asyncSendUSDT(client, listunspent, tx, hot, feeRate);
         if (!ok) {
             break;
         }
@@ -106,7 +106,7 @@ function matchTransactions(listunspent, omniBalances, minAmount) {
         omniBalances.delete(unspent.address);
         let amount = new BigNumber(unspent.amount);
         let input = new Input(unspent.txid, unspent.vout, amount);
-        transactions.push({inputs: [input], amount: balance});
+        transactions.push({from: unspent.address, inputs: [input], amount: balance, btc: unspent.amount});
 
         listunspent[idx] = listunspent[listunspent.length - 1];
         listunspent.length = listunspent.length - 1;
@@ -115,26 +115,37 @@ function matchTransactions(listunspent, omniBalances, minAmount) {
 }
 
 // 发送USDT到地址
-async function asyncSendUSDT(client, listunspent, inputs, to, amount, feeRate) {
-    if (listunspent.length == 0) {
-        return [null, listunspent, false];
-    }
+async function asyncSendUSDT(client, listunspent, tx, to, feeRate) {
+    let sum = new BigNumber(tx.btc);
+    while (true) {
+        if (listunspent.length == 0) {
+            return [null, listunspent, false];
+        }
+    
+        let addamount;
+        let count = 0;
+        [listunspent, tx.inputs, addamount, count] = utils.fillTransactionInputs(listunspent, tx.inputs, 1);
+        if (count == 0) {
+            return [null, listunspent, false];
+        }
+        sum = sum.plus(new BigNumber(addamount));
 
-    let addamount;
-    let count = 0;
-    [listunspent, inputs, addamount, count] = utils.fillTransactionInputs(listunspent, inputs, 1);
-    if (count == 0) {
-        return [null, listunspent, false];
-    }
+        let rawtx = await client.createRawTransaction(tx.inputs, {});
+        let payload = await client.omni_createpayload_simplesend(tokens.propertyid, tx.amount.toString());
+        rawtx = await client.omni_createrawtx_opreturn(rawtx, payload);
+        rawtx = await client.omni_createrawtx_reference(rawtx, to);
+        let txsigned = await client.signRawTransaction(rawtx);
+        const bytes = parseInt((txsigned.hex.length + 100) / 2);
+        const fee = feeutils.calculateFee(bytes, feeRate);
+        if (sum.comparedTo(fee) < 0) {
+            continue;
+        }
 
-    let rawtx = await client.createRawTransaction(inputs, {});
-    let payload = await client.omni_createpayload_simplesend(tokens.propertyid, amount.toString());
-    rawtx = await client.omni_createrawtx_opreturn(rawtx, payload);
-    rawtx = await client.omni_createrawtx_reference(rawtx, to);
-    rawtx = await client.fundRawTransaction(rawtx, {changeAddress: to, feeRate: feeRate});
-    const txsigned = await client.signRawTransaction(rawtx.hex);
-    const txid = await client.sendRawTransaction(txsigned.hex);
-    return txid;
+        rawtx = await client.fundRawTransaction(rawtx, {changeAddress: tx.from, feeRate: feeRate});
+        txsigned = await client.signRawTransaction(rawtx.hex);
+        const txid = await client.sendRawTransaction(txsigned.hex);
+        return [txid, listunspent, true];
+    }
 }
 
 module.exports = async function(client, req, callback) {
@@ -176,7 +187,9 @@ module.exports = async function(client, req, callback) {
 
     if (error == null) {
         callback(undefined, txid);
+        logger.error('collect token success, symbol: %s, txid: %s', rule[0], txid);
     } else {
         callback({code: -32000, message: error.message}, undefined);
+        logger.error('failed to collect token, symbol: %s, reason: %s', rule[0], error.message);
     }
 }
