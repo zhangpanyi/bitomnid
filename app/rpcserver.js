@@ -30,6 +30,12 @@ class RPCServer {
         this._server.addMethod('extSendToken', function(req, callback) {
             sendtoken(client, req, callback);
         });
+
+        // 获取钱包余额
+        const walletbalance = require('./handlers/walletbalance');
+        this._server.addMethod('extWalletBalance', function(req, callback) {
+            walletbalance(client, req, callback);
+        });
     }
 
     start() {
