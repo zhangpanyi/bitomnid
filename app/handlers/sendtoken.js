@@ -72,9 +72,56 @@ async function asyncSendBTC(client, to, amount) {
 
 // 发送泰达币
 async function asyncSendUSDT(client, to, amount) {
-    const address = await utils.asyncGetHotAddress(client);
-    const txid = await utils.omni_send(address, to, tokens.propertyid, amount);
-    return txid;
+    // 获取交易载体
+    const hot = await utils.asyncGetHotAddress(client);
+    let listunspent = await utils.asyncGetUnspentByAddresses(client, [hot]);
+    if (listunspent.length == 0) {
+        throw new Error('Insufficient funds');
+    }
+    let sum = new BigNumber(listunspent[0].amount);
+    let inputs = [{txid: listunspent[0].txid, vout: listunspent[0].vout}];
+    listunspent[0] = listunspent[listunspent.length-1];
+    listunspent.length = listunspent.length-1;
+
+    // 获取未消费输出
+    const addresses = await utils.asyncGetPaymentAddresses(client);
+    let listunspent2 = await utils.asyncGetUnspentByAddresses(client, addresses);
+    listunspent2 = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent2, tokens.propertyid);
+    listunspent = listunspent.concat(listunspent2);
+
+    // 获取手续费率
+    const feeRate = await feeutils.asyncGetFeeRate(client);
+
+    // 计算并发送泰达币
+    while (true) {
+        if (listunspent.length == 0) {
+            throw new Error('Insufficient funds');
+        }
+    
+        let addamount;
+        let count = 0;
+        [listunspent, inputs, addamount, count] = utils.fillTransactionInputs(listunspent, inputs, 1);
+        if (count == 0) {
+            throw new Error('Insufficient funds');
+        }
+        sum = sum.plus(new BigNumber(addamount));
+
+        let rawtx = await client.createRawTransaction(inputs, {});
+        let payload = await client.omni_createpayload_simplesend(tokens.propertyid, amount.toString());
+        rawtx = await client.omni_createrawtx_opreturn(rawtx, payload);
+        rawtx = await client.omni_createrawtx_reference(rawtx, to);
+        let txsigned = await client.signRawTransaction(rawtx);
+        const bytes = parseInt((txsigned.hex.length + 100) / 2);
+        const fee = feeutils.calculateFee(bytes, feeRate);
+        if (sum.comparedTo(fee) < 0) {
+            continue;
+        }
+
+        rawtx = await client.fundRawTransaction(rawtx, {changeAddress: hot, feeRate: feeRate});
+        txsigned = await client.signRawTransaction(rawtx.hex);
+        const txid = await client.sendRawTransaction(txsigned.hex);
+        return txid;
+    }
 }
 
 module.exports = async function(client, req, callback) {
