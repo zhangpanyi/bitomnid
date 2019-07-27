@@ -1,3 +1,4 @@
+const validator = require('validator');
 const BigNumber = require('bignumber.js');
 
 const utils = require('./utils/utils.js');
@@ -7,7 +8,6 @@ const logger = require('../common/logger');
 const nothrow = require('../common/nothrow');
 
 const tokens = require("../../config/tokens");
-
 
 // 发送比特币
 async function asyncSendBTC(client, to, amount) {
@@ -139,11 +139,11 @@ module.exports = async function(client, req, callback) {
             value: null,
             is_valid: function(symbol) {
                 symbol = symbol.toUpperCase();
-                if (symbol != 'BTC' || symbol != 'USDT') {
-                    return false;
+                if (symbol == 'BTC' || symbol == 'USDT') {
+                    this.value = symbol;
+                    return true;
                 }
-                this.value = symbol;
-                return true;
+                return false;
             }
         },
         {
@@ -158,24 +158,25 @@ module.exports = async function(client, req, callback) {
             }
         }
     ];
+
     if (!utils.validationParams(req, rule, callback)) {
         return;
     }
 
     let error, txid;
-    if (rule[1] == 'BTC') {
-        [error, txid] = await nothrow(asyncSendBTC(client, rule[0], rule[2]));
-    } else if (rule[1] == 'USDT') {
-        [error, txid] = await nothrow(asyncSendUSDT(client, rule[0], rule[2]));
+    if (rule[1].value == 'BTC') {
+        [error, txid] = await nothrow(asyncSendBTC(client, rule[0].value, rule[2].value));
+    } else if (rule[1].value == 'USDT') {
+        [error, txid] = await nothrow(asyncSendUSDT(client, rule[0].value, rule[2].value));
     }
 
     if (error == null) {
         callback(undefined, txid);
         logger.error('send token success, symbol: %s, to: %s, amount: %s, txid: %s',
-            rule[1], rule[0], rule[2], txid);
+            rule[1].value, rule[0].value, rule[2].value, txid);
     } else {
         callback({code: -32000, message: error.message}, undefined);
         logger.error('failed to send token, symbol: %s, to: %s, amount: %s, reason: %s',
-            rule[1], rule[0], rule[2], error.message);
+            rule[1].value, rule[0].value, rule[2].value, error.message);
     }
 }

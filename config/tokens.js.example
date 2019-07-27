@@ -1,3 +1,4 @@
 module.exports = {
-    propertyid: 2
+    propertyid: 2,
+    notify: 'http://127.0.0.1/webhooks/btc'
 };

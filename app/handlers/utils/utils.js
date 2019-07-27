@@ -2,8 +2,7 @@ const BigNumber = require('bignumber.js');
 
 module.exports = {
     // 验证参数规则
-    validationParams: function(req, rule, callback) {
-        let params = req.params;
+    validationParams: function(params, rule, callback) {
         for (let i = 0; i < rule.length; i++) {
             if (i >= params.length) {
                 if (rule[i].value == null) {

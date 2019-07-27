@@ -1,3 +1,4 @@
+const validator = require('validator');
 const BigNumber = require('bignumber.js');
 
 const utils = require('./utils/utils.js');
@@ -103,7 +104,7 @@ module.exports = async function(client, req, callback) {
     }
  
     let error, txid;
-    [error, txid] = await nothrow(asyncSendFee(client, rule[0]));
+    [error, txid] = await nothrow(asyncSendFee(client, rule[0].value));
     if (error == null) {
         callback(undefined, txid);
         logger.error('send fee success, txid: %s', txid);

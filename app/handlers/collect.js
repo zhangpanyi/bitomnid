@@ -1,4 +1,4 @@
-
+const validator = require('validator');
 const BigNumber = require('bignumber.js');
 
 const utils = require('./utils/utils.js');
@@ -179,17 +179,17 @@ module.exports = async function(client, req, callback) {
     }
 
     let error, txid;
-    if (rule[0] == 'BTC') {
+    if (rule[0].value == 'BTC') {
         [error, txid] = await nothrow(asyncCollectionBTC(client));
-    } else if (rule['symbol'] == 'USDT') {
-        [error, txid] = await nothrow(asyncCollectionUSDT(client, rule[1]));
+    } else if (rule[0].value== 'USDT') {
+        [error, txid] = await nothrow(asyncCollectionUSDT(client, rule[1].value));
     }
 
     if (error == null) {
         callback(undefined, txid);
-        logger.error('collect token success, symbol: %s, txid: %s', rule[0], txid);
+        logger.error('collect token success, symbol: %s, txid: %s', rule[0].value, txid);
     } else {
         callback({code: -32000, message: error.message}, undefined);
-        logger.error('failed to collect token, symbol: %s, reason: %s', rule[0], error.message);
+        logger.error('failed to collect token, symbol: %s, reason: %s', rule[0].value, error.message);
     }
 }
