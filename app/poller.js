@@ -25,7 +25,7 @@ class Poller {
         // 轮询状态变更
         while (true) {
             try {
-                await sleep(30 * 1000);
+                await sleep(5 * 1000);
                 const set = await this._asyncGetUnspentSet();
     
                 // 获取新增交易
