@@ -4,6 +4,7 @@ const BigNumber = require('bignumber.js');
 const utils = require('./utils/utils.js');
 const feeutils = require('./utils/fee.js');
 
+const logger = require('../common/logger');
 const nothrow = require('../common/nothrow');
 const tokens = require("../../config/tokens");
 
@@ -24,7 +25,7 @@ async function asyncCollectionBTC(client) {
     let listunspent = await utils.asyncGetUnspentByAddresses(client, addresses);
     listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, tokens.propertyid);
     if (listunspent.length == 0) {
-        return null;
+        return [];
     }
 
     // 创建输入和输出
@@ -34,7 +35,7 @@ async function asyncCollectionBTC(client) {
         inputs.push({txid: unspent.txid, vout: unspent.vout});
     }
     if (inputs.length == 0) {
-        return null;
+        return [];
     }
 
     // 获取手续费率
@@ -48,11 +49,11 @@ async function asyncCollectionBTC(client) {
         {changeAddress: hot, feeRate: feeRate});
     const txsigned = await client.signRawTransaction(rawtx.hex);
     const txid = await client.sendRawTransaction(txsigned.hex);
-    return txid;
+    return [txid];
 }
 
 // 归集泰达币
-module.exports = async function asyncCollectionUSDT(client, minAmount) {
+async function asyncCollectionUSDT(client, minAmount) {
     // 获取基本信息
     minAmount = new BigNumber(minAmount);
     const hot = await utils.asyncGetHotAddress(client);
@@ -141,7 +142,7 @@ async function asyncSendUSDT(client, listunspent, tx, to, feeRate) {
             continue;
         }
 
-        rawtx = await client.fundRawTransaction(rawtx, {changeAddress: tx.from, feeRate: feeRate});
+        rawtx = await client.fundRawTransaction(rawtx, {changeAddress: to, feeRate: feeRate});
         txsigned = await client.signRawTransaction(rawtx.hex);
         const txid = await client.sendRawTransaction(txsigned.hex);
         return [txid, listunspent, true];
@@ -155,11 +156,11 @@ module.exports = async function(client, req, callback) {
             value: null,
             is_valid: function(symbol) {
                 symbol = symbol.toUpperCase();
-                if (symbol != 'BTC' || symbol != 'USDT') {
-                    return false;
+                if (symbol == 'BTC' || symbol == 'USDT') {
+                    this.value = symbol;
+                    return true;
                 }
-                this.value = symbol;
-                return true;
+                return false;
             }
         },
         {
@@ -187,9 +188,9 @@ module.exports = async function(client, req, callback) {
 
     if (error == null) {
         callback(undefined, txid);
-        logger.error('collect token success, symbol: %s, txid: %s', rule[0].value, txid);
+        logger.error('Collect token success, symbol: %s, txid: %s', rule[0].value, txid);
     } else {
         callback({code: -32000, message: error.message}, undefined);
-        logger.error('failed to collect token, symbol: %s, reason: %s', rule[0].value, error.message);
+        logger.error('Failed to collect token, symbol: %s, reason: %s', rule[0].value, error.message);
     }
 }

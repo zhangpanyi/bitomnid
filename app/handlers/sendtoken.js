@@ -172,11 +172,11 @@ module.exports = async function(client, req, callback) {
 
     if (error == null) {
         callback(undefined, txid);
-        logger.error('send token success, symbol: %s, to: %s, amount: %s, txid: %s',
+        logger.error('Send token success, symbol: %s, to: %s, amount: %s, txid: %s',
             rule[1].value, rule[0].value, rule[2].value, txid);
     } else {
         callback({code: -32000, message: error.message}, undefined);
-        logger.error('failed to send token, symbol: %s, to: %s, amount: %s, reason: %s',
+        logger.error('Failed to send token, symbol: %s, to: %s, amount: %s, reason: %s',
             rule[1].value, rule[0].value, rule[2].value, error.message);
     }
 }

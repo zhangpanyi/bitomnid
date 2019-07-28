@@ -1,6 +1,8 @@
 const BigNumber = require('bignumber.js');
 
 const Notify = require('./notify');
+const UnSpent = require('./unspent');
+
 const sleep = require('./common/sleep');
 const logger = require('./common/logger');
 const utils = require('./handlers/utils/utils');
@@ -17,27 +19,35 @@ class Poller {
 
     // 开始轮询
     async startPolling() {
-       // this._unspentSet = await this._asyncGetUnspentSet();
-       this._unspentSet = new Set();
+        // 初始化状态
+       this._unspentSet = new Set(UnSpent.getListUnspent());
         
+        // 轮询状态变更
         while (true) {
-           // await sleep(30 * 1000);
-            const set = await this._asyncGetUnspentSet();
-
-            // 获取新增交易
-            let add = new Array();
-            for (let key of set) {
-                if (!this._unspentSet.has(key)) {
-                    add.push(key);
+            try {
+                await sleep(30 * 1000);
+                const set = await this._asyncGetUnspentSet();
+    
+                // 获取新增交易
+                let add = new Array();
+                for (let key of set) {
+                    if (!this._unspentSet.has(key)) {
+                        add.push(key);
+                    }
                 }
+    
+                // 解析交易信息
+                for (let idx = 0; idx < add.length; idx++) {
+                    const slice = add[idx].split(':');
+                    await this._asyncParseTranstion(slice[0], parseInt(slice[1]));
+                }
+                
+                // 更新未消费输出
+                this._unspentSet = set;
+                UnSpent.setListUnspent(Array.from(set));
+            } catch (error) {
+                logger.warn("Failed to polling list unspent, %s", error.message);
             }
-
-            // 解析交易信息
-            for (let idx = 0; idx < add.length; idx++) {
-                const slice = add[idx].split(':');
-                await this._asyncParseTranstion(slice[0], parseInt(slice[1]));
-            }
-            break;
         }
     }
 

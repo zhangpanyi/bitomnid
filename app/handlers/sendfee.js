@@ -23,7 +23,7 @@ async function asyncSendFee(client, minAmount) {
     }
     balances.delete(hot);
     if (balances.size == 0) {
-        return null;
+        return [];
     }
     
     // 获取未消费输出
@@ -32,7 +32,7 @@ async function asyncSendFee(client, minAmount) {
     listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, tokens.propertyid);
     listunspent = listunspent.concat(await utils.asyncGetUnspentByAddresses(client, [hot]));
     if (listunspent.length == 0) {
-        return null;
+        return [];
     }
 
     // 获取手续费率
@@ -107,9 +107,9 @@ module.exports = async function(client, req, callback) {
     [error, txid] = await nothrow(asyncSendFee(client, rule[0].value));
     if (error == null) {
         callback(undefined, txid);
-        logger.error('send fee success, txid: %s', txid);
+        logger.error('Send fee success, txid: %s', txid);
     } else {
         callback({code: -32000, message: error.message}, undefined);
-        logger.error('failed to send fee, reason: %s', error.message);
+        logger.error('Failed to send fee, reason: %s', error.message);
     }
  }
