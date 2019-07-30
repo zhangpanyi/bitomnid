@@ -31,6 +31,12 @@ class RPCServer {
             sendtoken(client, req, callback);
         });
 
+        // 获取交易信息
+        const gettransaction = require('./handlers/gettx');
+        this._server.addMethod('extGetTransaction', function(req, callback) {
+            gettransaction(client, req, callback);
+        });
+
         // 获取钱包余额
         const walletbalance = require('./handlers/walletbalance');
         this._server.addMethod('extWalletBalance', function(req, callback) {

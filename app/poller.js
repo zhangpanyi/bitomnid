@@ -1,5 +1,6 @@
 const BigNumber = require('bignumber.js');
 
+const Const = require('./const');
 const Notify = require('./notify');
 const UnSpent = require('./unspent');
 
@@ -8,8 +9,6 @@ const logger = require('./common/logger');
 const utils = require('./handlers/utils/utils');
 
 const tokens = require("../config/tokens");
-
-const OmniSimpleSendHeader = '6f6d6e6900000000';
 
 class Poller {
     constructor(client) {
@@ -116,7 +115,7 @@ class Poller {
         if (await this._asyncHasSendFromMine(tx.details)) {
             return false;
         }
-        if (tx.hex.search(OmniSimpleSendHeader) > 0) {
+        if (tx.hex.search(Const.OmniSimpleSendHeader) > 0) {
             await this._asyncParseOmniTranstion(txid);
         }
         
