@@ -20,6 +20,7 @@ npm install && npm start
 方法名称: `extNewAddr`
 
 **返回参数说明** 
+
 |类型|说明|
 |:-----|----- |
 |string  |地址  |
@@ -52,6 +53,7 @@ npm install && npm start
 |minAmount |string   |最小USDT金额 |
 
 **返回参数说明** 
+
 |类型|说明|
 |:-----|----- |
 |array of string  |交易ID列表  |
@@ -83,6 +85,7 @@ npm install && npm start
 |minAmount |string   |接收者最小USDT金额 |
 
 **返回参数说明** 
+
 |类型|说明|
 |:-----|----- |
 |string  |交易ID  |
@@ -116,6 +119,7 @@ npm install && npm start
 |amount | string | 发送金额 |
 
 **返回参数说明** 
+
 |类型|说明|
 |:-----|----- |
 |string  |交易ID  |
@@ -195,6 +199,7 @@ npm install && npm start
 |symbol |string |货币符号 |
 
 **返回参数说明** 
+
 |类型|说明|
 |:-----|----- |
 |string  |余额  |
