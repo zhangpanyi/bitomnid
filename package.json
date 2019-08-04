@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "bignumber.js": "^9.0.0",
-    "bitcoin-core": "^2.2.0",
+    "bitcoin-core": "git+https://github.com/zhangpanyi/bitcoin-core.git",
     "log4js": "^4.4.0",
     "node-json-rpc": "0.0.1",
     "validator": "^11.1.0"
