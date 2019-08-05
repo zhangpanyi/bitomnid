@@ -1,4 +1,4 @@
-const Client = require('bitcoin-core');
+const Client = require('omnilayer-core');
 
 const server = require('./config/server');
 

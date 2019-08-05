@@ -5,9 +5,9 @@
   "main": "index.js",
   "dependencies": {
     "bignumber.js": "^9.0.0",
-    "bitcoin-core": "github:zhangpanyi/bitcoin-core",
     "log4js": "^4.4.0",
     "node-json-rpc": "0.0.1",
+    "omnilayer-core": "github:zhangpanyi/omnilayer-core",
     "validator": "^11.1.0"
   },
   "scripts": {
