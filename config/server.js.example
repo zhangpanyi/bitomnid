@@ -1,7 +1,7 @@
 module.exports = {
     accept: {
         host: '0.0.0.0', 
-        port: 18545,
+        port: 58332,
         // auth: {
         //     users: [
         //         {

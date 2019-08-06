@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  ominibtc:
+    build:
+      context: .
+    image: ominibtc
+    container_name: ominibtc
+    expose:
+      - "58332"
+    ports:
+      - 58332:58332
+    command: node index.js
+    volumes:
+      - ominibtc-data-volume:/ominibtc/db
+      - ./config/server.js:/ominibtc/config/server.js
+      - ./config/tokens.js:/ominibtc/config/tokens.js
+
+volumes:
+  ominibtc-data-volume:
+    external: true

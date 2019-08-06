@@ -10,3 +10,5 @@ COPY package-lock.json /ominibtc/package-lock.json
 RUN cd /ominibtc && npm i
 
 WORKDIR /ominibtc
+
+EXPOSE 58332
