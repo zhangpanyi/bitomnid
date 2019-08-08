@@ -29,7 +29,7 @@ async function asyncSendBTC(client, to, amount) {
         }
     }
     if (sum.comparedTo(amount) == -1) {
-        listunspent = await utils.asyncGetUnspentByAddresses(client, [hot]);
+        listunspent = await utils.asyncGetHotAccountUnspent(client);
         for (let idx in listunspent) {
             const unspent = listunspent[idx];
             inputs.push({txid: unspent.txid, vout: unspent.vout});
@@ -73,7 +73,7 @@ async function asyncSendBTC(client, to, amount) {
 async function asyncSendUSDT(client, to, amount) {
     // 获取交易载体
     const hot = await utils.asyncGetHotAddress(client);
-    let listunspent = await utils.asyncGetUnspentByAddresses(client, [hot]);
+    let listunspent = await utils.asyncGetHotAccountUnspent(client);
     if (listunspent.length == 0) {
         throw new Error('Insufficient funds');
     }

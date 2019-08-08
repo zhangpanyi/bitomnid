@@ -72,7 +72,7 @@ async function asyncCollectionUSDT(client, minAmount) {
 
     // 发送到主地址
     let txs = [];
-    listunspent = listunspent.concat(await utils.asyncGetUnspentByAddresses(client, [hot]));
+    listunspent = listunspent.concat(await utils.asyncGetHotAccountUnspent(client));
     for (let idx = 0; idx < transactions.length; idx++) {
         let txid, ok;
         const tx = transactions[idx];

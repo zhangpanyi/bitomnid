@@ -62,9 +62,32 @@ module.exports = {
         return addresses[0];
     },
 
-    // 获取付款钱包地址
-    asyncGetPaymentAddresses: async function(client) {
-        return await client.getAddressesByAccount('payment');
+    // 获取热账户未消费输出
+    asyncGetHotAccountUnspent: async function (client,) {
+        let array = new Array();
+        const listunspent = await client.listUnspent(1, 999999999);
+        for (const index in listunspent) {
+            const unspent = listunspent[index];
+            if (unspent.account !== 'hot') {
+                continue;
+            }
+            array.push(unspent);
+        }
+        return array;
+    },
+
+    // 获取付款账户未消费输出
+    asyncGetPaymentAccountUnspent: async function (client) {
+        let array = new Array();
+        const listunspent = await client.listUnspent(1, 999999999);
+        for (const index in listunspent) {
+            const unspent = listunspent[index];
+            if (unspent.account !== 'payment') {
+                continue;
+            }
+            array.push(unspent);
+        }
+        return array;
     },
 
     // 获取Omni代币余额
@@ -82,31 +105,6 @@ module.exports = {
             }
         }
         return balances;
-    },
-
-    // 根据账户获取未消费输出
-    asyncGetPaymentAccountUnspent: async function (client) {
-        let array = new Array();
-        const listunspent = await client.listUnspent(1, 999999999);
-        for (const index in listunspent) {
-            const unspent = listunspent[index];
-            if (unspent.account !== 'payment') {
-                continue;
-            }
-            array.push(unspent);
-        }
-        return array;
-    },
-
-    // 根据地址获取未消费输出
-    asyncGetUnspentByAddresses: async function (client, addresses) {
-        let array = new Array();
-        const listunspent = await client.listUnspent(1, 999999999, addresses);
-        for (const index in listunspent) {
-            const unspent = listunspent[index];
-            array.push(unspent);
-        }
-        return array;
     },
 
     // 获取没有Omni余额未消费输出
