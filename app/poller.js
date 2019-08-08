@@ -14,21 +14,24 @@ const server = require('../config/server');
 class Poller {
     constructor(client) {
         this._client = client;
-        this._listunspent = [];
+        this._extra = new Set();
         this._unspentSet = new Set();
     }
 
     // 开始轮询
     async startPolling() {
         // 初始化状态
-        await this._asyncGetUnspentSet();
         this._unspentSet = new Set(UnSpent.getListUnspent());
         
         // 轮询状态变更
         while (true) {
             try {
                 await sleep(5 * 1000);
-                const set = await this._asyncGetUnspentSet();
+
+                // 获取unspent
+                let set, listunspent;
+                [set, listunspent] = await this._asyncGetUnspentSet();
+                set = new Set([...this._extra, ...set]);
     
                 // 获取新增交易
                 let add = new Array();
@@ -44,6 +47,9 @@ class Poller {
                     await this._asyncParseTranstion(slice[0], parseInt(slice[1]));
                 }
                 
+                // 清理额外数据
+                this._extra.clear();
+
                 // 更新未消费输出
                 this._unspentSet = set;
                 UnSpent.setListUnspent(Array.from(set));
@@ -53,10 +59,14 @@ class Poller {
         }
     }
 
-    // 获取付款账户未消费输出
-    async asyncGetPaymentAccountUnspent() {
-        return this._listunspent;
+    // 获取未消费输出
+    async asyncGetListtUnspent() {
+        let set, listunspent;
+        [set, listunspent] = await this._asyncGetUnspentSet();
+        this._extra = new Set([...this._extra, ...set]);
+        return listunspent;
     }
+
 
     // 获取未消费输出集合
     async _asyncGetUnspentSet() {
@@ -71,8 +81,7 @@ class Poller {
             array.push(unspent);
             set.add(unspent.txid + ':' + unspent.vout);
         }
-        this._listunspent = array;
-        return set;
+        return [set, array];
     }
 
     // 是否包含我发送

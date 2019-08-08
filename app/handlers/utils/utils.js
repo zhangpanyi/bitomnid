@@ -79,7 +79,7 @@ module.exports = {
 
     // 获取付款账户未消费输出
     asyncGetPaymentAccountUnspent: async function (client) {
-        return client.poller.asyncGetPaymentAccountUnspent();
+        return client.poller.asyncGetListtUnspent();
     },
 
     // 获取Omni代币余额
