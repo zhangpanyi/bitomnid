@@ -13,13 +13,15 @@ const tokens = require("../config/tokens");
 class Poller {
     constructor(client) {
         this._client = client;
+        this._listunspent = [];
         this._unspentSet = new Set();
     }
 
     // 开始轮询
     async startPolling() {
         // 初始化状态
-       this._unspentSet = new Set(UnSpent.getListUnspent());
+        await this._asyncGetUnspentSet();
+        this._unspentSet = new Set(UnSpent.getListUnspent());
         
         // 轮询状态变更
         while (true) {
@@ -50,14 +52,25 @@ class Poller {
         }
     }
 
+    // 获取付款账户未消费输出
+    async asyncGetPaymentAccountUnspent() {
+        return this._listunspent;
+    }
+
     // 获取未消费输出集合
     async _asyncGetUnspentSet() {
+        let array = [];
         let set = new Set();
-        let listunspent = await utils.asyncGetPaymentAccountUnspent(this._client);
-        for (let idx = 0; idx < listunspent.length; idx++) {
-            const unspent = listunspent[idx];
+        const listunspent = await this._client.listUnspent(1, 999999999);
+        for (const index in listunspent) {
+            const unspent = listunspent[index];
+            if (unspent.account !== 'payment') {
+                continue;
+            }
+            array.push(unspent);
             set.add(unspent.txid + ':' + unspent.vout);
         }
+        this._listunspent = array;
         return set;
     }
 

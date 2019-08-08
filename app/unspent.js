@@ -9,7 +9,7 @@ module.exports = {
         return 'db/listunspent.json';
     },
 
-    // 获取高度
+    // 获取未消费输出列表
     getListUnspent : function() {
         if (!fs.existsSync(this.getPath())) {
             fs.writeFileSync(this.getPath(), '[]');
@@ -18,7 +18,7 @@ module.exports = {
         return listunspent || [];
     },
 
-    // 更新高度
+    // 设置未消费输出列表
     setListUnspent : function(listunspent) {
         let json = JSON.stringify(listunspent);
         fs.writeFileSync(this.getPath(), json);

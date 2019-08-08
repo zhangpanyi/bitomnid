@@ -13,6 +13,7 @@ try {
     const poller = new Poller(client);
     poller.startPolling();
     
+    client.poller = poller;
     const rpcserver = new RPCServer(client);
     rpcserver.start();
 } catch (error) {

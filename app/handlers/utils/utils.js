@@ -78,16 +78,7 @@ module.exports = {
 
     // 获取付款账户未消费输出
     asyncGetPaymentAccountUnspent: async function (client) {
-        let array = new Array();
-        const listunspent = await client.listUnspent(1, 999999999);
-        for (const index in listunspent) {
-            const unspent = listunspent[index];
-            if (unspent.account !== 'payment') {
-                continue;
-            }
-            array.push(unspent);
-        }
-        return array;
+        return client.poller.asyncGetPaymentAccountUnspent();
     },
 
     // 获取Omni代币余额

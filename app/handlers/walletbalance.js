@@ -44,7 +44,7 @@ module.exports = async function(client, req, callback) {
     if (!utils.validationParams(req, rule, callback)) {
         return;
     }
-    
+
     let error, balance;
     if (rule[0].value == 'BTC') {
         [error, balance] = await nothrow(asyncGetBalance(client));
