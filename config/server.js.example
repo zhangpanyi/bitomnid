@@ -17,5 +17,7 @@ module.exports = {
         network: 'testnet',
         password: 'password',
         username: 'username',
-    }
+    },
+    hotAccount: 'hot',
+    paymentAccount: 'payment',
 };

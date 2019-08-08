@@ -1,4 +1,5 @@
 const BigNumber = require('bignumber.js');
+const server = require('../../../config/server');
 
 module.exports = {
     // 验证参数规则
@@ -54,9 +55,9 @@ module.exports = {
 
     // 获取热钱包地址
     asyncGetHotAddress: async function(client) {
-        const addresses = await client.getAddressesByAccount('hot');
+        const addresses = await client.getAddressesByAccount(server.hotAccount);
         if (addresses.length == 0) {
-            const address = await client.getAccountAddress('hot');
+            const address = await client.getAccountAddress(server.hotAccount);
             return [address];
         }
         return addresses[0];
@@ -68,7 +69,7 @@ module.exports = {
         const listunspent = await client.listUnspent(1, 999999999);
         for (const index in listunspent) {
             const unspent = listunspent[index];
-            if (unspent.account !== 'hot') {
+            if (unspent.account !== server.hotAccount) {
                 continue;
             }
             array.push(unspent);

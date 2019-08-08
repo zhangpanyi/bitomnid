@@ -9,6 +9,7 @@ const logger = require('./common/logger');
 const utils = require('./handlers/utils/utils');
 
 const tokens = require("../config/tokens");
+const server = require('../config/server');
 
 class Poller {
     constructor(client) {
@@ -64,7 +65,7 @@ class Poller {
         const listunspent = await this._client.listUnspent(1, 999999999);
         for (const index in listunspent) {
             const unspent = listunspent[index];
-            if (unspent.account !== 'payment') {
+            if (unspent.account !== server.paymentAccount) {
                 continue;
             }
             array.push(unspent);
