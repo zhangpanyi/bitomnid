@@ -32,6 +32,7 @@ class Poller {
                 let set, listunspent;
                 [set, listunspent] = await this._asyncGetUnspentSet();
                 set = new Set([...this._extra, ...set]);
+                this._extra.clear();
     
                 // 获取新增交易
                 let add = new Array();
@@ -44,11 +45,13 @@ class Poller {
                 // 解析交易信息
                 for (let idx = 0; idx < add.length; idx++) {
                     const slice = add[idx].split(':');
-                    await this._asyncParseTranstion(slice[0], parseInt(slice[1]));
+                    try {
+                        await this._asyncParseTranstion(slice[0], parseInt(slice[1]));
+                    } catch (error) {
+                        logger.warn("Failed to parse transtion, txid: %s, vout: %s, %s",
+                            slice[0], parseInt(slice[1]), error.message);
+                    } 
                 }
-                
-                // 清理额外数据
-                this._extra.clear();
 
                 // 更新未消费输出
                 this._unspentSet = set;
