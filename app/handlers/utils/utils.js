@@ -84,17 +84,27 @@ module.exports = {
         return balances;
     },
 
-    // 获取未消费输出
-    asyncGetUnspentByAddresses: async function (client, addresses, minBalance) {
+    // 根据账户获取未消费输出
+    asyncGetPaymentAccountUnspent: async function (client) {
+        let array = new Array();
+        const listunspent = await client.listUnspent(1, 999999999);
+        for (const index in listunspent) {
+            const unspent = listunspent[index];
+            if (unspent.account !== 'payment') {
+                continue;
+            }
+            array.push(unspent);
+        }
+        return array;
+    },
+
+    // 根据地址获取未消费输出
+    asyncGetUnspentByAddresses: async function (client, addresses) {
         let array = new Array();
         const listunspent = await client.listUnspent(1, 999999999, addresses);
         for (const index in listunspent) {
             const unspent = listunspent[index];
-            if (!minBalance) {
-                array.push(unspent);
-            } else if (unspent.amount >= minBalance) {
-                array.push(unspent);
-            }
+            array.push(unspent);
         }
         return array;
     },

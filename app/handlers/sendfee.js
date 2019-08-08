@@ -27,8 +27,7 @@ async function asyncSendFee(client, minAmount) {
     }
     
     // 获取未消费输出
-    const addresses = await utils.asyncGetPaymentAddresses(client);
-    let listunspent = await utils.asyncGetUnspentByAddresses(client, addresses);
+    let listunspent = await utils.asyncGetPaymentAccountUnspent(client);
     listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, tokens.propertyid);
     listunspent = listunspent.concat(await utils.asyncGetUnspentByAddresses(client, [hot]));
     if (listunspent.length == 0) {

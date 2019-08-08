@@ -13,8 +13,7 @@ const tokens = require("../../config/tokens");
 async function asyncSendBTC(client, to, amount) {
     // 获取基本信息
     const hot = await utils.asyncGetHotAddress(client);
-    const addresses = await utils.asyncGetPaymentAddresses(client);
-    let listunspent = await utils.asyncGetUnspentByAddresses(client, addresses);
+    let listunspent = await utils.asyncGetPaymentAccountUnspent(client);
     listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, tokens.propertyid);
 
     // 创建输入和输出
@@ -84,8 +83,7 @@ async function asyncSendUSDT(client, to, amount) {
     listunspent.length = listunspent.length-1;
 
     // 获取未消费输出
-    const addresses = await utils.asyncGetPaymentAddresses(client);
-    let listunspent2 = await utils.asyncGetUnspentByAddresses(client, addresses);
+    let listunspent2 = await utils.asyncGetPaymentAccountUnspent(client);
     listunspent2 = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent2, tokens.propertyid);
     listunspent = listunspent.concat(listunspent2);
 

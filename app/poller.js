@@ -53,8 +53,7 @@ class Poller {
     // 获取未消费输出集合
     async _asyncGetUnspentSet() {
         let set = new Set();
-        const addresses = await utils.asyncGetPaymentAddresses(this._client);
-        let listunspent = await utils.asyncGetUnspentByAddresses(this._client, addresses);
+        let listunspent = await utils.asyncGetPaymentAccountUnspent(this._client);
         for (let idx = 0; idx < listunspent.length; idx++) {
             const unspent = listunspent[idx];
             set.add(unspent.txid + ':' + unspent.vout);

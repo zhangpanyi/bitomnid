@@ -8,9 +8,7 @@ const tokens = require("../../config/tokens");
 // 获取BTC余额
 async function asyncGetBalance(client) {
     let balance = new BigNumber('0');
-    let addresses = await utils.asyncGetPaymentAddresses(client);
-    addresses.push(await utils.asyncGetHotAddress(client));
-    let listunspent = await utils.asyncGetUnspentByAddresses(client, addresses);
+    let listunspent = await client.listUnspent(1, 999999999);
     for (let idx = 0; idx < listunspent.length; idx++) {
         const unspent = listunspent[idx];
         balance = balance.plus(new BigNumber(unspent.amount));

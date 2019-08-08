@@ -21,8 +21,7 @@ class Input {
 async function asyncCollectionBTC(client) {
     // 获取基本信息
     const hot = await utils.asyncGetHotAddress(client);
-    const addresses = await utils.asyncGetPaymentAddresses(client);
-    let listunspent = await utils.asyncGetUnspentByAddresses(client, addresses);
+    let listunspent = await utils.asyncGetPaymentAccountUnspent(client);
     listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, tokens.propertyid);
     if (listunspent.length == 0) {
         return [];
@@ -57,8 +56,7 @@ async function asyncCollectionUSDT(client, minAmount) {
     // 获取基本信息
     minAmount = new BigNumber(minAmount);
     const hot = await utils.asyncGetHotAddress(client);
-    const addresses = await utils.asyncGetPaymentAddresses(client);
-    let listunspent = await utils.asyncGetUnspentByAddresses(client, addresses);
+    let listunspent = await utils.asyncGetPaymentAccountUnspent(client);
     const balances = await utils.asyncGetOmniWalletBalances(client, tokens.propertyid);
 
     // 匹配交易事务
