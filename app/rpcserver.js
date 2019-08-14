@@ -5,7 +5,7 @@ const server = require('../config/server');
 
 class RPCServer {
     constructor(client){
-        this._server = new rpc.Server(server.accept);
+        this._server = new rpc.Server(server.listen);
 
         // 资金归集
         const collect = require('./handlers/collect');

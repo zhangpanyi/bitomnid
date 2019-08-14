@@ -1,5 +1,5 @@
 # ominibtc
-比特币及USDT钱包中间件，提供方便的BTC/USDT转账、地址管理、资金归集和收款通知等功能。
+ominibtc 是比特币及USDT钱包中间件服务，基于比特币全节点 JSON RPC API 进行二次封装，提供更便利的BTC/USDT转账、地址管理、资金归集和收款通知等功能。使用 ominibtc 二次封装的 JSON-RPC API 进行转账或归集 USDT 时会自动选择最合适的 [UTXO](https://www.zhihu.com/question/59913301) 作为交易输入，并找零到钱包主地址。
 
 ## 1. 快速开始
 ```
@@ -10,6 +10,35 @@ npm install && npm start
 
 ## 2. 配置文件
 由于工程中只有配置模板，第一次启动服务前必须执行 `node init_config.js` 命令，用于自动生成配置文件，然后酌情修改。
+
+`server.js` 文件是服务基本配置，结构如下：
+```javascript
+module.exports = {
+    listen: {
+        host: '0.0.0.0', 
+        port: 58332,
+        // auth: {
+        //     users: [
+        //         {
+        //             login: "username",
+        //             hash: "password"
+        //         }
+        //     ]
+        // }
+    },
+    endpoint: {
+        host: 'localhost',
+        port: 18332,
+        network: 'testnet',
+        password: 'password',
+        username: 'username',
+    },
+    hotAccount: 'hot',
+    paymentAccount: 'payment',
+};
+```
+1. `listen` 字段用于配置 ominibtc JSON-RPC 服务监听的地址、端口、密码等信息。
+2. `endpoint` 字段用于配置比特币全节点 JSON-RPC 接口的地址、端口、密码等信息。
 
 ## 3. 接口列表
 
