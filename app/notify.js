@@ -14,7 +14,7 @@ function Notify() {
         let data = JSON.stringify(this);
         for (let idx = 0; idx < urls.length; idx++) {
             let options = {
-                url: urls[idx],
+                url:    urls[idx],
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
