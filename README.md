@@ -1,14 +1,7 @@
 # ominibtc
-ominibtc 是比特币及USDT钱包中间件服务，基于比特币全节点 JSON RPC API 进行二次封装，提供更便利的BTC/USDT转账、地址管理、资金归集和收款通知等功能。使用 ominibtc 二次封装的 JSON-RPC API 进行转账或归集 USDT 时会自动选择最合适的 [UTXO](https://www.zhihu.com/question/59913301) 作为交易输入，并找零到钱包主地址。
+ominibtc 是比特币及USDT钱包中间件服务，基于比特币全节点 JSON RPC API 进行二次封装，提供更便利的BTC/USDT转账、地址管理、资金归集和收款通知等功能。使用 ominibtc 二次封装的 JSON-RPC API 进行转账或归集 USDT 时会自动设置手续费并选择最合适的 [UTXO](https://www.zhihu.com/question/59913301) 作为交易输入，并找零到热钱包地址。
 
-## 1. 快速开始
-```
-git clone https://github.com/zhangpanyi/ominibtc.git
-cd ominibtc
-npm install && npm start
-```
-
-## 2. 配置文件
+## 1. 配置文件
 由于工程中只有配置模板，第一次启动服务前必须执行 `node init_config.js` 命令，用于自动生成配置文件，然后酌情修改。
 
 `server.js` 文件是服务基本配置，结构如下：
@@ -38,7 +31,26 @@ module.exports = {
 };
 ```
 1. `listen` 字段用于配置 ominibtc JSON-RPC 服务监听的地址、端口、密码等信息。
-2. `endpoint` 字段用于配置比特币全节点 JSON-RPC 接口的地址、端口、密码等信息。
+2. `endpoint` 字段用于配置比特币全节点 JSON-RPC 接口的地址、端口、密码等信息，其中 `network` 字段可选值为：`mainnet`，`regtest`，`testnet`。
+3. `hotAccount` 字段用于配置比特币热钱包账户名，所有对外转账都由此账户的第一个地址转出。
+4. `paymentAccount` 字段用于配置比特币充值账户名，用于管理用户生成的充值地址。接口 `extNewAddr` 生成的新地址也是存放在充值账户下进行管理。
+
+`tokens.js` 文件是 USDT 的配置文件，结构如下：
+```javascript
+module.exports = {
+    propertyid: 2,
+    notify: 'http://127.0.0.1/webhooks/btc'
+};
+```
+1. `propertyid` 字段表示 [OmniLayer](http://www.omnilayer.org/) 上的 Token 标识符，当使用 `testnet` 时应填写 `2`，当使用 `maintest` 上应填写 `31`。
+2. `notify` 字段表示接收转账时的回调 URL，当充值账户里的地址收到转账时，将会 `POST` 转账信息到设置的 URL。
+
+## 2. 快速开始
+```
+docker volume create ominibtc-data-volume
+docker-compose build
+docker-compose up -d
+```
 
 ## 3. 接口列表
 
@@ -247,3 +259,13 @@ module.exports = {
 // 返回结果
 {"id":1,"result":"0.09545991"}
 ```
+
+### 4. 参考资料
+* [比特币接口文档](https://www.blockchain.com/es/api/json_rpc_api)
+* [Omni Core接口文档](https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md)
+
+### 5. 其它事项
+1. 测试网络可以通过水龙头来获取比特币；[https://testnet.manu.backend.hamburg/faucet](https://testnet.manu.backend.hamburg/faucet)
+2. 获取测试网络基于Omni Core发行的代币，调用RPC接口 `sendtoaddress` 发送一些比特币到地址 `moneyqMan7uh8FqdCA2BV5yZ8qVrc9ikLP`，稍后会收到一些基于OmniLayer发行的TestOmni(`propertyid=2`)币了。查询OmniLayer代币列表使用 `omni_listproperties` 接口，查询OmniLayer代币余额使用 `omni_getbalance` 接口。参考资料：[https://github.com/OmniLayer/omnicore/issues/529](https://github.com/OmniLayer/omnicore/issues/529)
+3. 主网上基于OmniLayer发行的USDT代币 `propertyid=31`，参考资料：[https://github.com/OmniLayer/omnicore/issues/545](https://github.com/OmniLayer/omnicore/issues/545)。
+4. USDT热钱包地址默认为 `getaccountaddress('tether')`(通过API获取)。用户提现时均由此地址转出，务必保证此地址余额充足。
