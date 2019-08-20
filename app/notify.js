@@ -10,6 +10,13 @@ function Notify() {
 
     // 投递通知
     this.post = function(urls) {
+        if (!urls) {
+            return;
+        }
+        if (!urls instanceof Array) {
+            urls = [urls];
+        }
+
         this.type = 'transaction';
         let data = JSON.stringify(this);
         for (let idx = 0; idx < urls.length; idx++) {
