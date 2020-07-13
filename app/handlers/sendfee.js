@@ -7,14 +7,14 @@ const feeutils = require('./utils/fee.js');
 const logger = require('../common/logger');
 const nothrow = require('../common/nothrow');
 
-const tokens = require("../../config/tokens");
+const server = require('../../config/server');
 
 // 发送手续费
 async function asyncSendFee(client, minAmount) {
     // 获取USDT余额
     minAmount = new BigNumber(minAmount);
     const hot = await utils.asyncGetHotAddress(client);
-    const balances = await utils.asyncGetOmniWalletBalances(client, tokens.propertyid);
+    const balances = await utils.asyncGetOmniWalletBalances(client, server.propertyid);
     for (let [key, _] of balances) {
         let amount = new BigNumber(balances.get(key));
         if (amount.comparedTo(minAmount) == -1) {
@@ -28,7 +28,7 @@ async function asyncSendFee(client, minAmount) {
     
     // 获取未消费输出
     let listunspent = await utils.asyncGetPaymentAccountUnspent(client);
-    listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, tokens.propertyid);
+    listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, server.propertyid);
     listunspent = listunspent.concat(await utils.asyncGetHotAccountUnspent(client));
     if (listunspent.length == 0) {
         return [];

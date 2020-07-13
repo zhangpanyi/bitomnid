@@ -16,12 +16,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zhangpanyi/ominibtc.git"
+    "url": "git+https://github.com/zhangpanyi/bitomnid.git"
   },
   "author": "zpy",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/zhangpanyi/ominibtc/issues"
+    "url": "https://github.com/zhangpanyi/bitomnid/issues"
   },
-  "homepage": "https://github.com/zhangpanyi/ominibtc#readme"
+  "homepage": "https://github.com/zhangpanyi/bitomnid#readme"
 }

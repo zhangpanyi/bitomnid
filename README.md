@@ -1,5 +1,5 @@
-# ominibtc
-ominibtc 是比特币及USDT钱包中间件服务，基于比特币全节点 JSON RPC API 进行二次封装，提供更便利的BTC/USDT转账、地址管理、资金归集和收款通知等功能。使用 ominibtc 二次封装的 JSON-RPC API 进行转账或归集 USDT 时会自动设置手续费并选择最合适的 [UTXO](https://www.zhihu.com/question/59913301) 作为交易输入，并找零到热钱包地址。
+# bitomnid
+bitomnid 是比特币及USDT钱包中间件服务，基于比特币全节点 JSON RPC API 进行二次封装，提供更便利的BTC/USDT转账、地址管理、资金归集和收款通知等功能。使用 bitomnid 二次封装的 JSON-RPC API 进行转账或归集 USDT 时会自动设置手续费并选择最合适的 [UTXO](https://www.zhihu.com/question/59913301) 作为交易输入，并找零到热钱包地址。
 
 ## 1. 配置文件
 由于工程中只有配置模板，第一次启动服务前必须执行 `node init_config.js` 命令，用于自动生成配置文件，然后酌情修改。
@@ -30,7 +30,7 @@ module.exports = {
     paymentAccount: 'payment',
 };
 ```
-1. `listen` 字段用于配置 ominibtc JSON-RPC 服务监听的地址、端口、密码等信息。
+1. `listen` 字段用于配置 bitomnid JSON-RPC 服务监听的地址、端口、密码等信息。
 2. `endpoint` 字段用于配置比特币全节点 JSON-RPC 接口的地址、端口、密码等信息，其中 `network` 字段可选值为：`mainnet`，`regtest`，`testnet`。
 3. `hotAccount` 字段用于配置比特币热钱包账户名，所有对外转账都由此账户的第一个地址转出。
 4. `paymentAccount` 字段用于配置比特币充值账户名，用于管理用户生成的充值地址。接口 `extNewAddr` 生成的新地址也是存放在充值账户下进行管理。
@@ -47,7 +47,7 @@ module.exports = {
 
 ## 2. 快速开始
 ```
-docker volume create ominibtc-data-volume
+docker volume create bitomnid-data-volume
 docker-compose build
 docker-compose up -d
 ```

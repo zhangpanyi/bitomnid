@@ -2,13 +2,13 @@ FROM node:8-alpine
 
 RUN apk add --no-cache git bash python2
 
-COPY app /ominibtc/app
-COPY index.js /ominibtc/index.js
-COPY package.json /ominibtc/package.json
-COPY package-lock.json /ominibtc/package-lock.json
+COPY app /bitomnid/app
+COPY index.js /bitomnid/index.js
+COPY package.json /bitomnid/package.json
+COPY package-lock.json /bitomnid/package-lock.json
 
-RUN cd /ominibtc && npm i
+RUN cd /bitomnid && npm i
 
-WORKDIR /ominibtc
+WORKDIR /bitomnid
 
 EXPOSE 58332

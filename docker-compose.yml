@@ -1,21 +1,21 @@
 version: "3"
 
 services:
-  ominibtc:
+  bitomnid:
     build:
       context: .
-    image: ominibtc
-    container_name: ominibtc
+    image: bitomnid
+    container_name: bitomnid
     expose:
       - "58332"
     ports:
       - 58332:58332
     command: node index.js
     volumes:
-      - ominibtc-data-volume:/ominibtc/db
-      - ./config/server.js:/ominibtc/config/server.js
-      - ./config/tokens.js:/ominibtc/config/tokens.js
+      - bitomnid-data-volume:/bitomnid/db
+      - ./config/server.js:/bitomnid/config/server.js
+      - ./config/tokens.js:/bitomnid/config/tokens.js
 
 volumes:
-  ominibtc-data-volume:
+  bitomnid-data-volume:
     external: true

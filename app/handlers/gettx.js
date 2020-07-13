@@ -1,14 +1,5 @@
-const validator = require('validator');
-const BigNumber = require('bignumber.js');
-
-const utils = require('./utils/utils.js');
-const feeutils = require('./utils/fee.js');
-
 const Const = require('../const');
-const logger = require('../common/logger');
-const nothrow = require('../common/nothrow');
-
-const tokens = require("../../config/tokens");
+const utils = require('./utils/utils.js');
 
 module.exports = async function(client, req, callback) {
    const rule = [

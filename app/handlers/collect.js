@@ -6,7 +6,8 @@ const feeutils = require('./utils/fee.js');
 
 const logger = require('../common/logger');
 const nothrow = require('../common/nothrow');
-const tokens = require("../../config/tokens");
+
+const server = require('../../config/server');
 
 // 交易输入
 class Input {
@@ -22,7 +23,7 @@ async function asyncCollectionBTC(client) {
     // 获取基本信息
     const hot = await utils.asyncGetHotAddress(client);
     let listunspent = await utils.asyncGetPaymentAccountUnspent(client);
-    listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, tokens.propertyid);
+    listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, server.propertyid);
     if (listunspent.length == 0) {
         return [];
     }
@@ -57,7 +58,7 @@ async function asyncCollectionUSDT(client, minAmount) {
     minAmount = new BigNumber(minAmount);
     const hot = await utils.asyncGetHotAddress(client);
     let listunspent = await utils.asyncGetPaymentAccountUnspent(client);
-    const balances = await utils.asyncGetOmniWalletBalances(client, tokens.propertyid);
+    const balances = await utils.asyncGetOmniWalletBalances(client, server.propertyid);
 
     // 匹配交易事务
     let transactions;
@@ -130,7 +131,7 @@ async function asyncSendUSDT(client, listunspent, tx, to, feeRate) {
         sum = sum.plus(new BigNumber(addamount));
 
         let rawtx = await client.createRawTransaction(tx.inputs, {});
-        let payload = await client.omni_createpayload_simplesend(tokens.propertyid, tx.amount.toString());
+        let payload = await client.omni_createpayload_simplesend(server.propertyid, tx.amount.toString());
         rawtx = await client.omni_createrawtx_opreturn(rawtx, payload);
         rawtx = await client.omni_createrawtx_reference(rawtx, to);
         let txsigned = await client.signRawTransaction(rawtx);

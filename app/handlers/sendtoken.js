@@ -7,14 +7,14 @@ const feeutils = require('./utils/fee.js');
 const logger = require('../common/logger');
 const nothrow = require('../common/nothrow');
 
-const tokens = require("../../config/tokens");
+const server = require('../../config/server');
 
 // 发送比特币
 async function asyncSendBTC(client, to, amount) {
     // 获取基本信息
     const hot = await utils.asyncGetHotAddress(client);
     let listunspent = await utils.asyncGetPaymentAccountUnspent(client);
-    listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, tokens.propertyid);
+    listunspent = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent, server.propertyid);
 
     // 创建输入和输出
     let inputs = [];
@@ -84,7 +84,7 @@ async function asyncSendUSDT(client, to, amount) {
 
     // 获取未消费输出
     let listunspent2 = await utils.asyncGetPaymentAccountUnspent(client);
-    listunspent2 = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent2, tokens.propertyid);
+    listunspent2 = await utils.asyncGetUnspentWithNoOmniBalance(client, listunspent2, server.propertyid);
     listunspent = listunspent.concat(listunspent2);
 
     // 获取手续费率
@@ -105,7 +105,7 @@ async function asyncSendUSDT(client, to, amount) {
         sum = sum.plus(new BigNumber(addamount));
 
         let rawtx = await client.createRawTransaction(inputs, {});
-        let payload = await client.omni_createpayload_simplesend(tokens.propertyid, amount.toString());
+        let payload = await client.omni_createpayload_simplesend(server.propertyid, amount.toString());
         rawtx = await client.omni_createrawtx_opreturn(rawtx, payload);
         rawtx = await client.omni_createrawtx_reference(rawtx, to);
         let txsigned = await client.signRawTransaction(rawtx);

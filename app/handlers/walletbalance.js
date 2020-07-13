@@ -3,7 +3,7 @@ const BigNumber = require('bignumber.js');
 const utils = require('./utils/utils.js');
 
 const nothrow = require('../common/nothrow');
-const tokens = require("../../config/tokens");
+const server = require('../../config/server');
 
 // 获取BTC余额
 async function asyncGetBalance(client) {
@@ -19,7 +19,7 @@ async function asyncGetBalance(client) {
 // 获取USDT余额
 async function asyncGetOmniBalance(client) {
     let balance = new BigNumber('0');
-    const balances = await utils.asyncGetOmniWalletBalances(client, tokens.propertyid);
+    const balances = await utils.asyncGetOmniWalletBalances(client, server.propertyid);
     for (let [_, amount] of balances) {
         balance = balance.plus(new BigNumber(amount));
     }

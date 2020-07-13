@@ -6,9 +6,7 @@ const UnSpent = require('./unspent');
 
 const sleep = require('./common/sleep');
 const logger = require('./common/logger');
-const utils = require('./handlers/utils/utils');
 
-const tokens = require("../config/tokens");
 const server = require('../config/server');
 
 class Poller {
@@ -115,7 +113,7 @@ class Poller {
     // 解析Omni交易
     async _asyncParseOmniTranstion(txid) {
         const tx = await this._client.omni_gettransaction(txid);
-        if (!tx.valid || !tx.ismine || tx.propertyid != tokens.propertyid) {
+        if (!tx.valid || !tx.ismine || tx.propertyid != server.propertyid) {
             return;
         }
 
@@ -129,7 +127,7 @@ class Poller {
         notify.address     = tx.referenceaddress;
         notify.hash        = tx.txid;
         notify.amount      = tx.amount;
-        notify.post(tokens.notify);
+        notify.post(server.notify);
         logger.warn('Transfer has been received, symbol: %s, address: %s, amount: %s, txid: %s',
             notify.symbol, notify.address, notify.amount, notify.hash);
     }
@@ -158,7 +156,7 @@ class Poller {
         notify.hash        = txid;
         notify.vout        = vout;
         notify.amount      = amount.toString(10);
-        notify.post(tokens.notify);
+        notify.post(server.notify);
         logger.warn('Transfer has been received, symbol: %s, address: %s, amount: %s, txid: %s, vout: %s',
             notify.symbol, notify.address, notify.amount, notify.hash, notify.vout);
         return true;
