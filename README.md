@@ -28,22 +28,18 @@ module.exports = {
     },
     hotAccount: 'hot',
     paymentAccount: 'payment',
+    propertyid: 2,
+    notify: [
+        'http://127.0.0.1/webhooks/btc'
+    ]
 };
 ```
 1. `listen` 字段用于配置 bitomnid JSON-RPC 服务监听的地址、端口、密码等信息。
 2. `endpoint` 字段用于配置比特币全节点 JSON-RPC 接口的地址、端口、密码等信息，其中 `network` 字段可选值为：`mainnet`，`regtest`，`testnet`。
 3. `hotAccount` 字段用于配置比特币热钱包账户名，所有对外转账都由此账户的第一个地址转出。
 4. `paymentAccount` 字段用于配置比特币充值账户名，用于管理用户生成的充值地址。接口 `extNewAddr` 生成的新地址也是存放在充值账户下进行管理。
-
-`tokens.js` 文件是 USDT 的配置文件，结构如下：
-```javascript
-module.exports = {
-    propertyid: 2,
-    notify: 'http://127.0.0.1/webhooks/btc'
-};
-```
-1. `propertyid` 字段表示 [OmniLayer](http://www.omnilayer.org/) 上的 Token 标识符，当使用 `testnet` 时应填写 `2`，当使用 `maintest` 上应填写 `31`。
-2. `notify` 字段表示接收转账时的回调 URL，当充值账户里的地址收到转账时，将会 `POST` 转账信息到设置的 URL。
+5. `propertyid` 字段表示 [OmniLayer](http://www.omnilayer.org/) 上的 Token 标识符，当使用 `testnet` 时应填写 `2`，当使用 `maintest` 上应填写 `31`。
+6. `notify` 字段表示接收转账时的回调 URL，当充值账户里的地址收到转账时，将会 `POST` 转账信息到设置的 URL。
 
 ## 2. 快速开始
 ```
