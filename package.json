@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "bignumber.js": "^9.0.0",
-    "log4js": "^4.4.0",
+    "log4js": "^6.4.0",
     "node-json-rpc": "github:zhangpanyi/node-json-rpc",
     "omnilayer-core": "github:zhangpanyi/omnilayer-core",
     "validator": "^11.1.0"
